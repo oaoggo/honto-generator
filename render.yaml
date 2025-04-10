@@ -6,4 +6,4 @@ services:
     startCommand: "python app.py"
     envVars:
       - key: OPENAI_API_KEY
-        sync: false  # Render 웹 UI에서 수동 입력
+        sync: false  # Render 웹에서 직접 넣을 것이므로 false
