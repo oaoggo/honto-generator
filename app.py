@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # 환경변수에서 OpenAI API 키 가져오기
-openai.api_key = os.environ["OPENAI_API_KEY"]
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @app.route("/generate", methods=["POST"])
 def generate_content():
@@ -39,5 +39,7 @@ def generate_dalle_image(prompt):
     )
     return response.data[0].url
 
+# 🔧 Render 호환을 위한 포트 바인딩 수정
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
