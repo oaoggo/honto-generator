@@ -15,7 +15,6 @@
     async function generateImage() {
       const prompt = document.getElementById('promptInput').value;
 
-      // ✅ Render 배포환경 또는 로컬 모두 대응
       const res = await fetch("/generate", {
         method: "POST",
         headers: {
@@ -25,15 +24,18 @@
       });
 
       const data = await res.json();
-      console.log("응답 데이터:", data);  // ✅ 콘솔에 결과 출력
+      console.log("응답 데이터:", data);  // 콘솔 확인
+
+      const resultText = document.getElementById("resultText");
+      const resultImage = document.getElementById("resultImage");
 
       if (data.result) {
-        document.getElementById("resultText").textContent = "✅ 생성 성공!";
-        const img = document.getElementById("resultImage");
-        img.src = data.result;
-        img.style.display = "block";
+        resultText.textContent = "✅ 이미지 생성 성공!";
+        resultImage.src = data.result;
+        resultImage.style.display = "block";
       } else {
-        document.getElementById("resultText").textContent = "❌ 오류: " + data.error;
+        resultText.textContent = "❌ 오류 발생: " + (data.error || "응답 오류");
+        resultImage.style.display = "none";
       }
     }
   </script>
