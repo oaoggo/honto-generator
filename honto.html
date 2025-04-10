@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>🖼️ Honto Prompt to Image</title>
+</head>
+<body>
+  <h2>🎨 프롬프트로 이미지 생성</h2>
+  <input type="text" id="promptInput" placeholder="프롬프트 입력" style="width: 300px;">
+  <button onclick="generateImage()">생성</button>
+  <p id="resultText"></p>
+  <img id="resultImage" style="max-width: 512px; display:none;">
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById('promptInput').value;
+      const res = await fetch("http://127.0.0.1:5000/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await res.json();
+
+      if (data.result) {
+        document.getElementById("resultText").textContent = "✅ 생성 성공!";
+        const img = document.getElementById("resultImage");
+        img.src = data.result;
+        img.style.display = "block";
+      } else {
+        document.getElementById("resultText").textContent = "❌ 오류: " + data.error;
+      }
+    }
+  </script>
+</body>
+</html>
