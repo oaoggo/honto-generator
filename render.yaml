@@ -7,7 +7,3 @@ services:
     envVars:
       - key: OPENAI_API_KEY
         sync: false  # Render 웹에서 직접 입력
-#!/usr/bin/env bash
-echo "📦 Installing with python -m pip"
-python -m pip install -r requirements.txt
-python -m pip show flask || echo "❌ Flask not found"
