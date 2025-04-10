@@ -7,7 +7,6 @@ load_dotenv()
 app = Flask(__name__)
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-# ✅ 루트 경로 추가 (필수)
 @app.route("/", methods=["GET"])
 def home():
     return "✅ Honto Generator API is live!"
@@ -30,7 +29,6 @@ def generate_content():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 def generate_dalle_image(prompt):
     response = openai.images.generate(
         model="dall-e-3",
@@ -39,3 +37,7 @@ def generate_dalle_image(prompt):
         size="1024x1024"
     )
     return response.data[0].url
+
+# ✅ Render에서 gunicorn 또는 로컬 실행 시 필요
+if __name__ == "__main__":
+    app.run(debug=True)
