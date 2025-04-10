@@ -6,11 +6,13 @@ from dotenv import load_dotenv
 # .env 파일 로드
 load_dotenv()
 
-# Flask 앱 초기화
 app = Flask(__name__)
-
-# 환경변수에서 OpenAI API 키 가져오기
 openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+# 👉 루트 경로 추가 (Render 상태 확인용)
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Honto Generator API is live!"
 
 @app.route("/generate", methods=["POST"])
 def generate_content():
@@ -38,8 +40,3 @@ def generate_dalle_image(prompt):
         size="1024x1024"
     )
     return response.data[0].url
-
-# 🔧 Render 호환을 위한 포트 바인딩 수정
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
