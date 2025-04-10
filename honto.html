@@ -15,7 +15,7 @@
     async function generateImage() {
       const prompt = document.getElementById('promptInput').value;
 
-      const res = await fetch("/generate", {
+      const res = await fetch("https://honto-generator.onrender.com/generate", {  // ✅ Render 주소
         method: "POST",
         headers: {
           "Content-Type": "application/json"
