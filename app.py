@@ -3,13 +3,11 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# .env 파일 로드
 load_dotenv()
-
 app = Flask(__name__)
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-# 👉 루트 경로 추가 (Render 상태 확인용)
+# ✅ 루트 경로 추가 (필수)
 @app.route("/", methods=["GET"])
 def home():
     return "✅ Honto Generator API is live!"
