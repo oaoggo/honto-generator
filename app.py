@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS   # ✅ 1. 여기 추가
 import openai
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
+CORS(app)  # ✅ 2. Flask 앱 객체에 CORS 적용
+
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @app.route("/", methods=["GET"])
@@ -38,6 +41,5 @@ def generate_dalle_image(prompt):
     )
     return response.data[0].url
 
-# ✅ Render에서 gunicorn 또는 로컬 실행 시 필요
 if __name__ == "__main__":
     app.run(debug=True)
