@@ -30,6 +30,7 @@ def generate_content():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 def generate_dalle_image(prompt):
     response = openai.images.generate(
         model="dall-e-3",
