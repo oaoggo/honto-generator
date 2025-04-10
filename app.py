@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify
 import openai
 import os
+from dotenv import load_dotenv
 
+# .env 파일 로드
+load_dotenv()
+
+# Flask 앱 초기화
 app = Flask(__name__)
 
-# OpenAI 키를 환경변수에서 가져오거나 직접 입력
-openai.api_key = os.environ.get("OPENAI_API_KEY") or "여기에_당신의_API_키를_직접_입력하세요"
+# 환경변수에서 OpenAI API 키 가져오기
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 @app.route("/generate", methods=["POST"])
 def generate_content():
