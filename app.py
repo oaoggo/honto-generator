@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import requests
-import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,43 +40,28 @@ def generate_image():
             }
         }
 
-        response = requests.post(url, headers=headers, json=body)
+        res = requests.post(url, headers=headers, json=body)
+        output = res.json()
 
-        if not response.text or not response.text.strip().startswith('{'):
-            return jsonify({
-                "error": "Replicate 응답이 비어있거나 JSON이 아님",
-                "status_code": response.status_code,
-                "raw_response": response.text
-            }), 500
+        # Replicate의 응답 구조 체크
+        if "urls" in output and output["urls"].get("get"):
+            # 응답 URL에서 실제 이미지 생성 완료 여부 확인
+            prediction_url = output["urls"]["get"]
+            for _ in range(30):  # 최대 30초 대기
+                poll_res = requests.get(prediction_url, headers=headers)
+                poll_output = poll_res.json()
+                if poll_output.get("status") == "succeeded":
+                    return jsonify({"result": poll_output["output"][0]})
+                elif poll_output.get("status") == "failed":
+                    return jsonify({"error": "이미지 생성 실패"}), 500
+                time.sleep(1)
 
-        try:
-            prediction = response.json()
-        except Exception as e:
-            return jsonify({
-                "error": "JSON 파싱 실패",
-                "message": str(e),
-                "raw_response": response.text
-            }), 500
+            return jsonify({"error": "시간 초과로 이미지 생성 실패"}), 504
 
-        prediction_id = prediction.get("id")
-        if not prediction_id:
-            return jsonify({"error": prediction.get("detail", "prediction ID 없음")}), 500
-
-        # polling
-        status_url = f"https://api.replicate.com/v1/predictions/{prediction_id}"
-        for _ in range(20):
-            result_res = requests.get(status_url, headers=headers)
-            result_data = result_res.json()
-
-            if result_data["status"] == "succeeded":
-                image_url = result_data["output"][0]
-                return jsonify({"result": image_url})
-            elif result_data["status"] == "failed":
-                return jsonify({"error": "Stable Diffusion 이미지 생성 실패"}), 500
-
-            time.sleep(1)
-
-        return jsonify({"error": "⏰ 이미지 생성 시간 초과"}), 504
+        return jsonify({"error": "예상치 못한 응답"}), 500
 
     except Exception as e:
-        return jsonify({"error": f"서버 처리 중 예외 발생: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
