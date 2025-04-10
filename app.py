@@ -1,27 +1,21 @@
+from flask import Flask, request, jsonify
+import requests
 import os
 import base64
-import requests
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from dotenv import load_dotenv
-
-# 환경변수 로드
-load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # 프론트엔드(honto.html)에서 호출 허용
 
 # Hugging Face API 설정
 HUGGINGFACE_API_TOKEN = os.environ.get("HUGGINGFACE_API_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
+
 headers = {
     "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"
 }
 
-# 이미지 생성 요청 함수
 def query(payload):
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
+    return response.content  # base64로 이미지 반환
 
 @app.route("/generate", methods=["POST"])
 def generate_image():
