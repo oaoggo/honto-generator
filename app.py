@@ -17,7 +17,13 @@ headers = {
 
 def query(payload):
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content  # base64로 이미지 반환
+
+    content_type = response.headers.get("Content-Type", "")
+    if "image" in content_type:
+        return response.content
+    else:
+        print("❌ 이미지가 아닌 응답:", response.text)
+        raise Exception(f"이미지 생성 실패: {response.text}")
 
 @app.route("/generate", methods=["POST"])
 def generate_image():
