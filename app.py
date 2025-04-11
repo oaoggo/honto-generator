@@ -16,29 +16,40 @@ headers = {
 }
 
 def query(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
 
-    content_type = response.headers.get("Content-Type", "")
-    if "image" in content_type:
-        return response.content
-    else:
-        print("❌ 이미지가 아닌 응답:", response.text)
-        raise Exception(f"이미지 생성 실패: {response.text}")
+        print("🔍 Hugging Face 응답 상태코드:", response.status_code)
+        print("🔍 Content-Type:", response.headers.get("Content-Type"))
+
+        content_type = response.headers.get("Content-Type", "")
+        if "image" in content_type:
+            return response.content
+        else:
+            print("❌ 이미지 아님:", response.text)
+            raise Exception(response.text)
+
+    except Exception as e:
+        print("❗ query() 에러:", str(e))
+        raise
 
 @app.route("/generate", methods=["POST"])
 def generate_image():
-    data = request.get_json()
-    prompt = data.get("prompt")
-
-    if not prompt:
-        return jsonify({"error": "프롬프트가 없습니다."}), 400
-
     try:
+        data = request.get_json()
+        prompt = data.get("prompt")
+
+        if not prompt:
+            return jsonify({"error": "📛 프롬프트가 없습니다."}), 400
+
         image_bytes = query({"inputs": prompt})
+
         image_base64 = base64.b64encode(image_bytes).decode("utf-8")
         image_url = f"data:image/png;base64,{image_base64}"
         return jsonify({"result": image_url})
+
     except Exception as e:
+        print("❌ Flask 서버 처리 실패:", str(e))
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
