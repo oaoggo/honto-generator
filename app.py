@@ -3,34 +3,38 @@ from flask_cors import CORS
 import requests
 import os
 from dotenv import load_dotenv
+import base64
 
-# .env 불러오기
+# .env 파일 불러오기
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# DeepAI API 설정
-DEEPAI_API_KEY = os.environ.get("DEEPAI_API_KEY")
-API_URL = "https://api.deepai.org/api/text2img"
+# Hugging Face Inference API 설정
+HUGGINGFACE_API_TOKEN = os.environ.get("HUGGINGFACE_API_TOKEN")
+API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney-v4"
 
-def query(prompt):
-    response = requests.post(
-        API_URL,
-        data={"text": prompt},
-        headers={"api-key": DEEPAI_API_KEY}
-    )
+headers = {
+    "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"
+}
 
-    print("🔍 DeepAI 응답 상태코드:", response.status_code)
+def query(payload):
+    response = requests.post(API_URL, headers=headers, json=payload)
+
+    print("🔍 Hugging Face 응답 상태코드:", response.status_code)
     print("🔍 Content-Type:", response.headers.get("Content-Type", ""))
 
-    result = response.json()
-    image_url = result.get("output_url")
-
-    if image_url:
-        return image_url
+    content_type = response.headers.get("Content-Type", "")
+    if "image" in content_type:
+        return response.content
     else:
-        raise Exception(f"이미지 생성 실패: {result}")
+        print("❌ 이미지 아님:", response.text)
+
+        if "model is currently loading" in response.text.lower():
+            raise Exception("🕐 모델이 깨어나는 중입니다. 잠시 후 다시 시도해주세요.")
+
+        raise Exception(f"이미지 생성 실패: {response.text}")
 
 @app.route("/generate", methods=["POST"])
 def generate_image():
@@ -41,7 +45,10 @@ def generate_image():
         if not prompt:
             return jsonify({"error": "📛 프롬프트가 없습니다."}), 400
 
-        image_url = query(prompt)
+        image_bytes = query({"inputs": prompt})
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+        image_url = f"data:image/png;base64,{image_base64}"
+
         return jsonify({"result": image_url})
 
     except Exception as e:
