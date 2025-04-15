@@ -9,7 +9,8 @@ CORS(app)
 
 # Hugging Face API 설정
 HUGGINGFACE_API_TOKEN = os.environ.get("HUGGINGFACE_API_TOKEN")
-API_URL = "https://api-inference.huggingface.co/models/dreamlike-art/dreamlike-photoreal-2.0"
+API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+
 
 headers = {
     "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"
