@@ -6,4 +6,10 @@ services:
     startCommand: "python app.py"
     envVars:
       - key: OPENAI_API_KEY
-        sync: false  # Render 웹에서 직접 입력
+        sync: false
+      - key: DEEPAI_API_KEY
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: HUGGINGFACE_API_TOKEN
+        sync: false
