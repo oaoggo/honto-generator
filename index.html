@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>🍕 Honto Prompt to Image</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f6f8fa;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #resultText {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    #resultImage {
+      margin-top: 20px;
+      max-width: 512px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: none;
+      cursor: pointer;
+    }
+    #downloadHint {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🍕 프롬프트로 이미지 생성</h2>
+    <input type="text" id="promptInput" placeholder="프롬프트 입력" onkeydown="handleKey(event)" />
+    <button onclick="generateImage()">생성</button>
+    <p id="resultText"></p>
+    <img id="resultImage" alt="생성된 이미지" />
+    <p id="downloadHint" style="display: none;">🖱 이미지를 클릭하면 저장됩니다</p>
+  </div>
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      const resultText = document.getElementById("resultText");
+      const img = document.getElementById("resultImage");
+      const downloadHint = document.getElementById("downloadHint");
+
+      if (!prompt) {
+        resultText.textContent = "❗ 프롬프트를 입력하세요.";
+        img.style.display = "none";
+        downloadHint.style.display = "none";
+        return;
+      }
+
+      resultText.textContent = "⏳ 생성 중입니다...";
+      img.style.display = "none";
+      downloadHint.style.display = "none";
+
+      try {
+        const res = await fetch("https://honto-generator-sub.onrender.com/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) throw new Error("서버 오류: " + res.status);
+
+        const data = await res.json();
+
+        if (data.result) {
+          const base64 = data.result.startsWith("data:image")
+            ? data.result
+            : "data:image/png;base64," + data.result;
+
+          img.src = base64;
+          img.style.display = "block";
+          resultText.textContent = "✅ 생성 완료!";
+          downloadHint.style.display = "block";
+
+          // 이미지 다운로드 연결
+          img.onclick = () => {
+            const a = document.createElement("a");
+            a.href = base64;
+            a.download = "generated_image.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          };
+        } else {
+          resultText.textContent = "❌ 이미지 생성 실패 (응답 없음)";
+        }
+      } catch (err) {
+        resultText.textContent = "❌ 요청 실패: " + err.message;
+        img.style.display = "none";
+        downloadHint.style.display = "none";
+      }
+    }
+
+    function handleKey(event) {
+      if (event.key === "Enter") {
+        generateImage();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: honto-generator
+    env: python
+    buildCommand: "./.render/build.sh"
+    startCommand: "python app.py"
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false  # Render 웹에서 직접 입력
